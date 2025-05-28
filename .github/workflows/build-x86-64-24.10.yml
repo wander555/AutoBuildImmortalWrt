@@ -31,7 +31,8 @@ on:
         description: "宽带密码 (若启用PPPoE)"
         required: false
 env:
-  COMPILE_DATE: ${{ github.run_number }}
+  # COMPILE_DATE: ${{ github.run_number }} # 使用 github.run_number 保证每次标签唯一
+  COMPILE_DATE: ${{ format('{0:yyyyMMdd}', github.event.issue.created_at) }} #另一种生成方式
 jobs:
   build:
     runs-on: ubuntu-22.04
