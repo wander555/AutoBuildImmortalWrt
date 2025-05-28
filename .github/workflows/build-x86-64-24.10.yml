@@ -30,9 +30,6 @@ on:
       pppoe_password:
         description: "宽带密码 (若启用PPPoE)"
         required: false
-env:
-  COMPILE_DATE: ${{ format('{0:yyyyMMdd}', utcNow()) }}-${{ github.run_number }}
-  # COMPILE_DATE: ${{ format('{0:yyyyMMdd}', github.event.issue.created_at) }} #另一种生成方式
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -40,6 +37,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Get current date
+        id: get_date
+        run: |
+          echo "COMPILE_DATE=$(date -u +'%Y%m%d')" >> $GITHUB_OUTPUT
+          echo "COMPILE_DATETIME=$(date -u +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Set environment variables
+        env:
+          COMPILE_DATE: ${{ steps.get_date.outputs.COMPILE_DATE }}
+          COMPILE_DATETIME: ${{ steps.get_date.outputs.COMPILE_DATETIME }}
+        run: |
+          echo "COMPILE_DATE is: $COMPILE_DATE"
+          echo "COMPILE_DATETIME is: $COMPILE_DATETIME"
 
       - name: Set executable permissions
         run: chmod +x ${{ github.workspace }}/x86-64/build.sh
@@ -93,10 +104,13 @@ jobs:
             echo -e "NO docker"
           fi
 
+      - name: Debug tag_name
+        run: echo "tag_name will be: Autobuild-x86-64-${{ env.COMPILE_DATE }}"
+
       - name: Upload ImmortWrt as release assets
         uses: softprops/action-gh-release@v2.2.1
         with:
-          tag_name: Autobuild-x86-64-${{env.COMPILE_DATE}}
+          tag_name: Autobuild-x86-64-${{ env.COMPILE_DATE }} # 使用环境变量 COMPILE_DATE
           body_path: ${{ github.workspace }}/info.md
           files: |
             # ${{ github.workspace }}/*squashfs-combined-efi.img.gz
