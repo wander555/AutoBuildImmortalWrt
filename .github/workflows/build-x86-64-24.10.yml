@@ -4,33 +4,34 @@ on:
   workflow_dispatch:
     inputs:
       profile:
-        description: '请输入要编译固件大小 单位(MB)'
+        description: "请输入要编译固件大小 单位(MB)"
         required: true
-        default: '1024'
+        default: "512"
       include_docker:
         description: |
           是否编译 Docker 插件
         required: true
-        default: 'yes'
+        default: "no"
         type: choice
         options:
-          - 'yes'
-          - 'no'
+          - "yes"
+          - "no"
       enable_pppoe:
         description: "是否配置PPPoE拨号信息?"
         required: true
-        default: 'no'
+        default: "no"
         type: choice
         options:
-        - 'yes'
-        - 'no'
+          - "yes"
+          - "no"
       pppoe_account:
         description: "宽带账号 (若启用PPPoE)"
         required: false
       pppoe_password:
         description: "宽带密码 (若启用PPPoE)"
         required: false
-
+env:
+  COMPILE_DATE: $(date +"%Y%m%d")
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -41,7 +42,6 @@ jobs:
 
       - name: Set executable permissions
         run: chmod +x ${{ github.workspace }}/x86-64/build.sh
-
 
       - name: Validate PPPoE Inputs
         run: |
@@ -57,7 +57,7 @@ jobs:
           profiles="${{ github.event.inputs.profile }}"
           include_docker="${{ github.event.inputs.include_docker }}"
           IFS=',' read -r -a profile_array <<< "$profiles"
-          
+
           for profile in "${profile_array[@]}"; do
             echo "Building for profile: $profile"
             
@@ -95,7 +95,7 @@ jobs:
       - name: Upload ImmortWrt as release assets
         uses: softprops/action-gh-release@v2.2.1
         with:
-          tag_name: Autobuild-x86-64
+          tag_name: Autobuild-x86-64-${{env.COMPILE_DATE}}
           body_path: ${{ github.workspace }}/info.md
           files: |
             # ${{ github.workspace }}/*squashfs-combined-efi.img.gz
@@ -105,4 +105,3 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
