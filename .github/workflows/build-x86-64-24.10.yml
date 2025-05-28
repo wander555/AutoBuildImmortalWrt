@@ -31,7 +31,7 @@ on:
         description: "宽带密码 (若启用PPPoE)"
         required: false
 env:
-  COMPILE_DATE: $(date +"%Y%m%d")
+  COMPILE_DATE: ${{ github.run_number }}
 jobs:
   build:
     runs-on: ubuntu-22.04
